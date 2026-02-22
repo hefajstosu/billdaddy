@@ -10,6 +10,11 @@ def create_app(config=Config):
 
     db.init_app(app)
 
+    from . import models  # noqa
+
+    with app.app_context():
+        db.create_all()
+
     @app.route("/")
     def index():
         return "billdaddy"
