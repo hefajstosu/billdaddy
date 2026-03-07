@@ -1,4 +1,5 @@
 import os
+import uuid
 
 from flask import Blueprint, current_app, jsonify, request
 
@@ -20,7 +21,11 @@ def upload():
     if ext not in ALLOWED:
         return jsonify({"error": "bad file type"}), 400
 
-    path = os.path.join(current_app.config["UPLOAD_FOLDER"], f.filename)
+    # every phone names photos IMG_xxxx.jpg so they kept overwriting each other
+    filename = "{}.{}".format(uuid.uuid4().hex, ext)
+    folder = current_app.config["UPLOAD_FOLDER"]
+    os.makedirs(folder, exist_ok=True)
+    path = os.path.join(folder, filename)
     f.save(path)
 
     receipt = Receipt(image_path=path)
