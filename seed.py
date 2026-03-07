@@ -32,11 +32,15 @@ PRODUCTS = {
 app = create_app()
 
 with app.app_context():
+    # can be run multiple times
     for name in CATEGORIES:
-        db.session.add(Category(name=name))
+        if not Category.query.filter_by(name=name).first():
+            db.session.add(Category(name=name))
     db.session.commit()
 
     for name, cat in PRODUCTS.items():
+        if Product.query.filter_by(normalized_name=name).first():
+            continue
         c = Category.query.filter_by(name=cat).first()
         db.session.add(Product(normalized_name=name, category_id=c.id))
     db.session.commit()
