@@ -15,6 +15,9 @@ def create_app(config=Config):
     with app.app_context():
         db.create_all()
 
+    from .routes import receipts
+    app.register_blueprint(receipts.bp)
+
     @app.route("/")
     def index():
         return "billdaddy"
