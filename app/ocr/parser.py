@@ -4,6 +4,10 @@ import re
 ITEM_RE = re.compile(r"^(?P<name>.+?)\s+(?P<price>\d+[.,]\d{2})\s*[A-G]?$")
 
 
+def to_num(s):
+    return float(s.replace(",", ".").replace(" ", ""))
+
+
 def parse(text):
     items = []
     for line in text.splitlines():
@@ -15,7 +19,7 @@ def parse(text):
             continue
         items.append({
             "raw_name": m.group("name"),
-            "price": float(m.group("price")),
+            "price": to_num(m.group("price")),
             "quantity": 1,
         })
     return {"items": items}
