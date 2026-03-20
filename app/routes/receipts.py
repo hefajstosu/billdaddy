@@ -4,7 +4,8 @@ import uuid
 from flask import Blueprint, current_app, jsonify, request
 
 from ..extensions import db
-from ..models import Receipt
+from ..models import Receipt, ReceiptItem
+from ..ocr.parser import parse
 from ..ocr.tesseract_engine import read_text
 
 bp = Blueprint("receipts", __name__, url_prefix="/api/receipts")
@@ -31,12 +32,19 @@ def upload():
 
     text = read_text(path)
     print(text)
+    parsed = parse(text)
 
     receipt = Receipt(image_path=path)
+    for it in parsed["items"]:
+        receipt.items.append(ReceiptItem(
+            raw_name=it["raw_name"],
+            price_per_unit=it["price"],
+            quantity=it["quantity"],
+        ))
     db.session.add(receipt)
     db.session.commit()
 
-    return jsonify({**receipt.to_dict(), "raw_text": text}), 201
+    return jsonify(receipt.to_dict(with_items=True)), 201
 
 
 @bp.route("", methods=["GET"])
