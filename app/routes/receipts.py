@@ -34,7 +34,12 @@ def upload():
     print(text)
     parsed = parse(text)
 
-    receipt = Receipt(image_path=path)
+    receipt = Receipt(
+        image_path=path,
+        shop_name=parsed["shop"],
+        purchase_date=parsed["date"],
+        total_amount=parsed["total"],
+    )
     for it in parsed["items"]:
         receipt.items.append(ReceiptItem(
             raw_name=it["raw_name"],
