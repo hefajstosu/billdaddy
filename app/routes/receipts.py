@@ -7,6 +7,7 @@ from ..extensions import db
 from ..models import Receipt, ReceiptItem
 from ..ocr.parser import parse
 from ..ocr.tesseract_engine import read_text
+from ..services.normalizer import match_product
 
 bp = Blueprint("receipts", __name__, url_prefix="/api/receipts")
 
@@ -40,16 +41,23 @@ def upload():
         purchase_date=parsed["date"],
         total_amount=parsed["total"],
     )
+    scores = []
     for it in parsed["items"]:
+        product, score = match_product(it["raw_name"])
         receipt.items.append(ReceiptItem(
             raw_name=it["raw_name"],
             price_per_unit=it["price"],
             quantity=it["quantity"],
+            product=product,
         ))
+        scores.append(score)
     db.session.add(receipt)
     db.session.commit()
 
-    return jsonify(receipt.to_dict(with_items=True)), 201
+    data = receipt.to_dict(with_items=True)
+    for item, score in zip(data["items"], scores):
+        item["score"] = score
+    return jsonify(data), 201
 
 
 @bp.route("", methods=["GET"])
