@@ -7,6 +7,7 @@ from ..extensions import db
 from ..models import Receipt, ReceiptItem
 from ..ocr.parser import parse
 from ..ocr.tesseract_engine import read_text
+from ..services.categorizer import guess_category
 from ..services.normalizer import match_product
 
 bp = Blueprint("receipts", __name__, url_prefix="/api/receipts")
@@ -41,22 +42,29 @@ def upload():
         purchase_date=parsed["date"],
         total_amount=parsed["total"],
     )
-    scores = []
+    suggestions = []
     for it in parsed["items"]:
         product, score = match_product(it["raw_name"])
+        if product:
+            cat = product.category
+        else:
+            cat = guess_category(it["raw_name"])
         receipt.items.append(ReceiptItem(
             raw_name=it["raw_name"],
             price_per_unit=it["price"],
             quantity=it["quantity"],
             product=product,
         ))
-        scores.append(score)
+        suggestions.append({
+            "score": score,
+            "category": cat.to_dict() if cat else None,
+        })
     db.session.add(receipt)
     db.session.commit()
 
     data = receipt.to_dict(with_items=True)
-    for item, score in zip(data["items"], scores):
-        item["score"] = score
+    for item, sug in zip(data["items"], suggestions):
+        item.update(sug)
     return jsonify(data), 201
 
 
