@@ -3,7 +3,7 @@ import re
 from flask import current_app
 from thefuzz import fuzz, process
 
-from ..models import Product
+from ..models import Product, Receipt, ReceiptItem
 
 PL = str.maketrans("ąćęłńóśźż", "acelnoszz")
 
@@ -32,7 +32,24 @@ def clean(name):
     return " ".join(s.split())
 
 
+def known_raw_name(raw_name):
+    # same string was already confirmed by user before -> trust it
+    item = (
+        ReceiptItem.query.join(Receipt)
+        .filter(Receipt.status == "confirmed")
+        .filter(ReceiptItem.raw_name == raw_name)
+        .filter(ReceiptItem.product_id.isnot(None))
+        .order_by(ReceiptItem.id.desc())
+        .first()
+    )
+    return item.product if item else None
+
+
 def match_product(raw_name):
+    known = known_raw_name(raw_name)
+    if known:
+        return known, 100
+
     products = Product.query.all()
     if not products:
         return None, 0
