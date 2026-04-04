@@ -1,6 +1,7 @@
 import os
 import uuid
 from datetime import date
+from decimal import Decimal, InvalidOperation
 
 from flask import Blueprint, current_app, jsonify, request
 
@@ -79,7 +80,7 @@ def confirm(receipt_id):
     if data.get("purchase_date"):
         receipt.purchase_date = date.fromisoformat(data["purchase_date"])
     if data.get("total_amount") is not None:
-        receipt.total_amount = float(data["total_amount"])
+        receipt.total_amount = Decimal(str(data["total_amount"]))
 
     # just replace all items, frontend sends the whole list anyway
     receipt.items.clear()
@@ -98,21 +99,27 @@ def confirm(receipt_id):
         elif category_id and category_id != product.category_id:
             product.category_id = category_id
 
+        try:
+            price = Decimal(str(it["price_per_unit"]))
+            qty = Decimal(str(it.get("quantity") or 1))
+        except (KeyError, InvalidOperation):
+            return jsonify({"error": "bad price/quantity for " + name}), 400
+
         receipt.items.append(ReceiptItem(
             raw_name=it.get("raw_name") or name,
-            price_per_unit=float(it["price_per_unit"]),
-            quantity=float(it.get("quantity") or 1),
+            price_per_unit=price,
+            quantity=qty,
             product=product,
         ))
 
     receipt.status = "confirmed"
     db.session.commit()
 
-    computed = sum(round(i.price_per_unit * i.quantity, 2) for i in receipt.items)
+    computed = sum((i.line_total for i in receipt.items), Decimal("0"))
     result = receipt.to_dict(with_items=True)
-    result["computed_total"] = computed
+    result["computed_total"] = float(computed)
     result["total_mismatch"] = (
-        receipt.total_amount is not None and abs(computed - receipt.total_amount) > 0.01
+        receipt.total_amount is not None and computed != receipt.total_amount
     )
     return jsonify(result)
 

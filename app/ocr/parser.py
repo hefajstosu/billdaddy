@@ -1,5 +1,6 @@
 import re
 from datetime import date
+from decimal import Decimal
 
 # NAME  qty x unit_price  total + PTU letter
 # ocr sometimes adds garbage like "(1" or "S5,13C" so regex is a bit loose
@@ -31,7 +32,7 @@ SKIP_WORDS = ("SUMA", "PTU", "RESZTA", "GOTÓWKA", "GOTOWKA", "KARTA", "RABAT", 
 
 
 def to_num(s):
-    return float(s.replace(",", ".").replace(" ", ""))
+    return Decimal(s.replace(",", ".").replace(" ", ""))
 
 
 def find_shop(lines):

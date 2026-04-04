@@ -1,6 +1,11 @@
 from datetime import datetime
+from decimal import ROUND_HALF_UP, Decimal
 
 from .extensions import db
+
+
+def money(v):
+    return float(v) if v is not None else None
 
 
 class Category(db.Model):
@@ -37,7 +42,7 @@ class Receipt(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     shop_name = db.Column(db.String(100))
     purchase_date = db.Column(db.Date)
-    total_amount = db.Column(db.Float)
+    total_amount = db.Column(db.Numeric(10, 2))
     image_path = db.Column(db.String(255))
     status = db.Column(db.String(20), default="draft", nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -51,7 +56,7 @@ class Receipt(db.Model):
             "id": self.id,
             "shop_name": self.shop_name,
             "purchase_date": self.purchase_date.isoformat() if self.purchase_date else None,
-            "total_amount": self.total_amount,
+            "total_amount": money(self.total_amount),
             "status": self.status,
         }
         if with_items:
@@ -66,16 +71,24 @@ class ReceiptItem(db.Model):
     receipt_id = db.Column(db.Integer, db.ForeignKey("receipts.id"), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey("products.id"))
     raw_name = db.Column(db.String(200), nullable=False)
-    price_per_unit = db.Column(db.Float, nullable=False)
-    quantity = db.Column(db.Float, default=1)
+    price_per_unit = db.Column(db.Numeric(10, 2), nullable=False)
+    quantity = db.Column(db.Numeric(8, 3), default=Decimal(1))
 
     product = db.relationship("Product")
+
+    @property
+    def line_total(self):
+        # shops round half up, round() on floats doesn't (2.675 -> 2.67)
+        return (Decimal(self.price_per_unit) * Decimal(self.quantity)).quantize(
+            Decimal("0.01"), rounding=ROUND_HALF_UP
+        )
 
     def to_dict(self):
         return {
             "id": self.id,
             "raw_name": self.raw_name,
-            "price_per_unit": self.price_per_unit,
-            "quantity": self.quantity,
+            "price_per_unit": money(self.price_per_unit),
+            "quantity": money(self.quantity),
+            "line_total": money(self.line_total),
             "product": self.product.to_dict() if self.product else None,
         }
