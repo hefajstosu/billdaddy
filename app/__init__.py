@@ -13,11 +13,9 @@ def create_app(config=Config):
 
     from . import models  # noqa
 
-    from .routes import receipts
+    from .routes import main, receipts, stats
+    app.register_blueprint(main.bp)
     app.register_blueprint(receipts.bp)
-
-    @app.route("/")
-    def index():
-        return "billdaddy"
+    app.register_blueprint(stats.bp)
 
     return app
