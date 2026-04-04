@@ -12,4 +12,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 EXPOSE 5000
-CMD ["python", "run.py"]
+ENV FLASK_APP=run.py
+CMD ["./entrypoint.sh"]
