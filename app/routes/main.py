@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, render_template
 
 from ..models import Category, Product
 
@@ -7,7 +7,7 @@ bp = Blueprint("main", __name__)
 
 @bp.route("/")
 def index():
-    return "billdaddy"
+    return render_template("index.html")
 
 
 @bp.route("/api/categories")
