@@ -23,7 +23,7 @@ services:
     environment:
       DATABASE_URL: mysql+pymysql://billdaddy:billdaddy@db:3306/billdaddy
     volumes:
-      - ./uploads:/app/uploads
+      - .:/app
     depends_on:
       db:
         condition: service_healthy
