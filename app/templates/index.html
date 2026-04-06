@@ -17,7 +17,28 @@
   <main class="max-w-6xl mx-auto px-4 py-6 grid gap-6 lg:grid-cols-3">
     <section class="lg:col-span-2 bg-white rounded-lg shadow p-4">
       <h2 class="font-semibold mb-3">Dodaj paragon</h2>
-      <!-- upload here -->
+      <form id="upload-form" class="flex flex-wrap items-center gap-3">
+        <input type="file" name="image" accept="image/*" required
+               class="text-sm file:mr-3 file:py-2 file:px-4 file:rounded file:border-0 file:bg-emerald-50 file:text-emerald-700">
+        <button class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded">Wyślij</button>
+        <span id="upload-status" class="text-sm text-gray-500"></span>
+      </form>
+
+      <div id="draft" class="hidden mt-5">
+        <div class="text-sm text-gray-600 mb-2" id="draft-info"></div>
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left text-gray-500 border-b">
+              <th class="py-1">Z paragonu</th>
+              <th>Produkt</th>
+              <th>Kategoria</th>
+              <th class="text-right">Ilość</th>
+              <th class="text-right">Cena</th>
+            </tr>
+          </thead>
+          <tbody id="draft-items"></tbody>
+        </table>
+      </div>
     </section>
 
     <section class="bg-white rounded-lg shadow p-4">
@@ -28,5 +49,6 @@
       <h2 class="font-semibold mb-3">Historia cen</h2>
     </section>
   </main>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>
