@@ -14,11 +14,16 @@ async function api(url, opts) {
 async function loadLists() {
   [categories, products] = await Promise.all([api('/api/categories'), api('/api/products')]);
   $('#product-list').innerHTML = '';
+  const prev = $('#price-product').value;
+  $('#price-product').innerHTML = '';
   products.forEach((p) => {
     const opt = document.createElement('option');
     opt.value = p.name;
     $('#product-list').appendChild(opt);
+    $('#price-product').appendChild(new Option(p.name, p.id));
   });
+  if (prev) $('#price-product').value = prev;
+  loadPrices();
 }
 
 function categorySelect(selectedId) {
@@ -52,7 +57,7 @@ function addRow(it = {}) {
 
   const name = input(it.product ? it.product.name : '', '');
   name.setAttribute('list', 'product-list');
-  const cat = categorySelect(it.category ? it.category.id : null);
+  const cat = categorySelect(it.category ? it.category.id : it.product?.category_id);
   // picking existing product -> use its category
   name.addEventListener('change', () => {
     const p = products.find((p) => p.name === name.value);
@@ -115,6 +120,7 @@ $('#upload-form').addEventListener('submit', async (e) => {
     const receipt = await api('/api/receipts', { method: 'POST', body: new FormData(e.target) });
     renderDraft(receipt);
     $('#upload-status').textContent = '';
+    loadReceipts();
   } catch (err) {
     $('#upload-status').textContent = 'błąd: ' + err.message;
   }
@@ -138,6 +144,7 @@ $('#confirm').addEventListener('click', async () => {
     }
     loadLists();
     loadPie();
+    loadReceipts();
   } catch (err) {
     $('#confirm-status').textContent = 'błąd: ' + err.message;
     $('#confirm-status').className = 'text-sm text-red-600';
@@ -171,3 +178,81 @@ async function loadPie() {
 $('#f-from').addEventListener('change', loadPie);
 $('#f-to').addEventListener('change', loadPie);
 loadPie();
+
+async function loadPrices() {
+  const id = $('#price-product').value;
+  if (!id) return;
+  const data = await api(`/api/stats/prices/${id}`);
+
+  new Chart($('#line'), {
+    type: 'line',
+    data: {
+      labels: data.points.map((p) => p.date),
+      datasets: [{
+        label: data.product.name,
+        data: data.points.map((p) => p.price),
+        borderColor: '#059669',
+        tension: 0.2,
+      }],
+    },
+    options: {
+      maintainAspectRatio: false,
+      plugins: {
+        tooltip: { callbacks: { afterLabel: (ctx) => data.points[ctx.dataIndex].shop || '' } },
+      },
+    },
+  });
+
+  const el = $('#price-change');
+  if (data.change_pct === null) {
+    el.textContent = data.points.length ? 'za mało danych' : 'brak zakupów';
+    el.className = 'text-sm text-gray-500';
+  } else {
+    el.textContent = `${data.change_pct > 0 ? '+' : ''}${data.change_pct}% od pierwszego zakupu`;
+    el.className = 'text-sm ' + (data.change_pct > 0 ? 'text-red-600' : 'text-emerald-700');
+  }
+}
+
+$('#price-product').addEventListener('change', loadPrices);
+
+// --- receipts list ---
+async function loadReceipts() {
+  const rows = await api('/api/receipts');
+  const tbody = $('#receipts');
+  tbody.innerHTML = '';
+  rows.forEach((r) => {
+    const tr = document.createElement('tr');
+    tr.className = 'border-b';
+    const cells = [r.purchase_date || '-', r.shop_name || '?',
+      r.total_amount != null ? r.total_amount.toFixed(2) : '-', r.status];
+    cells.forEach((v, i) => {
+      const td = document.createElement('td');
+      td.className = 'py-1' + (i === 2 ? ' text-right' : '');
+      td.textContent = v;
+      tr.appendChild(td);
+    });
+
+    const td = document.createElement('td');
+    td.className = 'text-right space-x-2';
+    const edit = document.createElement('button');
+    edit.textContent = 'edytuj';
+    edit.className = 'text-emerald-700 hover:underline';
+    edit.onclick = async () => {
+      renderDraft(await api(`/api/receipts/${r.id}`));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    const del = document.createElement('button');
+    del.textContent = 'usuń';
+    del.className = 'text-red-600 hover:underline';
+    del.onclick = async () => {
+      await fetch(`/api/receipts/${r.id}`, { method: 'DELETE' });
+      loadReceipts();
+      loadPie();
+    };
+    td.append(edit, del);
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+  });
+}
+
+loadReceipts();

@@ -65,7 +65,24 @@
     </section>
 
     <section class="lg:col-span-3 bg-white rounded-lg shadow p-4">
-      <h2 class="font-semibold mb-3">Historia cen</h2>
+      <div class="flex flex-wrap items-center gap-3 mb-3">
+        <h2 class="font-semibold">Historia cen</h2>
+        <select id="price-product" class="border rounded px-2 py-1 text-sm"></select>
+        <span id="price-change" class="text-sm"></span>
+      </div>
+      <div class="h-64"><canvas id="line"></canvas></div>
+    </section>
+
+    <section class="lg:col-span-3 bg-white rounded-lg shadow p-4">
+      <h2 class="font-semibold mb-3">Paragony</h2>
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-left text-gray-500 border-b">
+            <th class="py-1">Data</th><th>Sklep</th><th class="text-right">Suma</th><th>Status</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="receipts"></tbody>
+      </table>
     </section>
   </main>
   <script src="{{ url_for('static', filename='js/app.js') }}"></script>
