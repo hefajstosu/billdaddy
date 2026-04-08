@@ -154,6 +154,9 @@ $('#confirm').addEventListener('click', async () => {
 loadLists();
 
 // --- charts ---
+let pieChart = null;
+let lineChart = null;
+
 const COLORS = ['#059669', '#2563eb', '#d97706', '#dc2626', '#7c3aed', '#db2777',
   '#0891b2', '#65a30d', '#ea580c', '#4b5563', '#a16207'];
 
@@ -163,7 +166,8 @@ async function loadPie() {
   if ($('#f-to').value) params.set('to', $('#f-to').value);
   const rows = await api('/api/stats/categories?' + params);
 
-  new Chart($('#pie'), {
+  if (pieChart) pieChart.destroy();
+  pieChart = new Chart($('#pie'), {
     type: 'doughnut',
     data: {
       labels: rows.map((r) => r.category),
@@ -184,7 +188,8 @@ async function loadPrices() {
   if (!id) return;
   const data = await api(`/api/stats/prices/${id}`);
 
-  new Chart($('#line'), {
+  if (lineChart) lineChart.destroy();
+  lineChart = new Chart($('#line'), {
     type: 'line',
     data: {
       labels: data.points.map((p) => p.date),
