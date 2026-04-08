@@ -137,6 +137,7 @@ $('#confirm').addEventListener('click', async () => {
       $('#confirm-status').className = 'text-sm text-emerald-700';
     }
     loadLists();
+    loadPie();
   } catch (err) {
     $('#confirm-status').textContent = 'błąd: ' + err.message;
     $('#confirm-status').className = 'text-sm text-red-600';
@@ -144,3 +145,29 @@ $('#confirm').addEventListener('click', async () => {
 });
 
 loadLists();
+
+// --- charts ---
+const COLORS = ['#059669', '#2563eb', '#d97706', '#dc2626', '#7c3aed', '#db2777',
+  '#0891b2', '#65a30d', '#ea580c', '#4b5563', '#a16207'];
+
+async function loadPie() {
+  const params = new URLSearchParams();
+  if ($('#f-from').value) params.set('from', $('#f-from').value);
+  if ($('#f-to').value) params.set('to', $('#f-to').value);
+  const rows = await api('/api/stats/categories?' + params);
+
+  new Chart($('#pie'), {
+    type: 'doughnut',
+    data: {
+      labels: rows.map((r) => r.category),
+      datasets: [{ data: rows.map((r) => r.total), backgroundColor: COLORS }],
+    },
+    options: { plugins: { legend: { position: 'bottom' } } },
+  });
+  const sum = rows.reduce((a, r) => a + r.total, 0);
+  $('#pie-total').textContent = `razem ${sum.toFixed(2)} zł`;
+}
+
+$('#f-from').addEventListener('change', loadPie);
+$('#f-to').addEventListener('change', loadPie);
+loadPie();

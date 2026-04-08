@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>BillDaddy</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body class="bg-gray-100 text-gray-800">
   <header class="bg-emerald-700 text-white">
@@ -55,6 +56,12 @@
 
     <section class="bg-white rounded-lg shadow p-4">
       <h2 class="font-semibold mb-3">Wydatki wg kategorii</h2>
+      <div class="flex gap-2 text-sm mb-3">
+        <input id="f-from" type="date" class="border rounded px-2 py-1 w-full">
+        <input id="f-to" type="date" class="border rounded px-2 py-1 w-full">
+      </div>
+      <canvas id="pie"></canvas>
+      <p id="pie-total" class="text-center text-sm text-gray-600 mt-2"></p>
     </section>
 
     <section class="lg:col-span-3 bg-white rounded-lg shadow p-4">
