@@ -232,7 +232,7 @@ async function loadReceipts() {
       r.total_amount != null ? r.total_amount.toFixed(2) : '-', r.status];
     cells.forEach((v, i) => {
       const td = document.createElement('td');
-      td.className = 'py-1' + (i === 2 ? ' text-right' : '');
+      td.className = 'py-1 pr-4' + (i === 2 ? ' text-right' : '');
       td.textContent = v;
       tr.appendChild(td);
     });
