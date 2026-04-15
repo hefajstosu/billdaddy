@@ -10,5 +10,6 @@ class Config:
     UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", "uploads")
     MAX_CONTENT_LENGTH = 10 * 1024 * 1024
     FUZZY_THRESHOLD = int(os.getenv("FUZZY_THRESHOLD", 80))
+    OCR_ENGINE = os.getenv("OCR_ENGINE", "tesseract")
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
     OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
