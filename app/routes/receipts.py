@@ -133,7 +133,13 @@ def list_receipts():
 @bp.route("/<int:receipt_id>", methods=["GET"])
 def get_receipt(receipt_id):
     r = Receipt.query.get_or_404(receipt_id)
-    return jsonify(r.to_dict(with_items=True))
+    data = r.to_dict(with_items=True)
+    if r.status == "draft":
+        # same suggestions as after upload, otherwise select falls back to first category
+        for item, obj in zip(data["items"], r.items):
+            cat = obj.product.category if obj.product else guess_category(obj.raw_name)
+            item["category"] = cat.to_dict() if cat else None
+    return jsonify(data)
 
 
 @bp.route("/<int:receipt_id>", methods=["DELETE"])
