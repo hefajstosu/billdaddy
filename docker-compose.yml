@@ -20,6 +20,9 @@ services:
     build: .
     ports:
       - "5001:5000"
+    env_file:
+      - path: .env
+        required: false
     environment:
       DATABASE_URL: mysql+pymysql://billdaddy:billdaddy@db:3306/billdaddy
     volumes:

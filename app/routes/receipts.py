@@ -7,8 +7,7 @@ from flask import Blueprint, current_app, jsonify, request
 
 from ..extensions import db
 from ..models import Category, Product, Receipt, ReceiptItem
-from ..ocr.parser import parse
-from ..ocr.tesseract_engine import read_text
+from ..ocr import extract
 from ..services.categorizer import guess_category
 from ..services.normalizer import match_product
 
@@ -34,9 +33,7 @@ def upload():
     path = os.path.join(folder, filename)
     f.save(path)
 
-    text = read_text(path)
-    print(text)
-    parsed = parse(text)
+    parsed = extract(path)
 
     receipt = Receipt(
         image_path=path,
@@ -49,6 +46,9 @@ def upload():
         product, score = match_product(it["raw_name"])
         if product:
             cat = product.category
+        elif it.get("category"):
+            # openai already suggested one
+            cat = Category.query.filter_by(name=it["category"]).first() or guess_category(it["raw_name"])
         else:
             cat = guess_category(it["raw_name"])
         receipt.items.append(ReceiptItem(
