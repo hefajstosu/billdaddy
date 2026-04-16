@@ -1,15 +1,22 @@
 import pytest
 
 from app import create_app
+from app.config import Config
 from app.extensions import db
 from app.models import Category, Product
 
 
+# setting the uri after create_app does nothing, db is already bound -> tests hit mysql
+class TestConfig(Config):
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = "sqlite://"
+    OCR_ENGINE = "tesseract"
+    FUZZY_THRESHOLD = 80
+
+
 @pytest.fixture
 def app():
-    app = create_app()
-    app.config["TESTING"] = True
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite://"
+    app = create_app(TestConfig)
 
     with app.app_context():
         db.create_all()
