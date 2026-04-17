@@ -1,6 +1,7 @@
 import base64
 import json
 import mimetypes
+import re
 from datetime import date
 from decimal import Decimal
 
@@ -12,6 +13,12 @@ PROMPT = """Read this Polish shop receipt. Return JSON only:
  "items": [{"raw_name": str, "quantity": number, "price": number, "category": str}]}
 raw_name exactly as printed, price = price per unit.
 category must be one of: %s"""
+
+
+def load_json(text):
+    # model likes to wrap it in ```json ... ``` even when asked not to
+    text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text.strip())
+    return json.loads(text)
 
 
 def extract(image_path, categories):
@@ -31,8 +38,9 @@ def extract(image_path, categories):
             ],
         }],
         temperature=0,
+        response_format={"type": "json_object"},
     )
-    data = json.loads(resp.choices[0].message.content)
+    data = load_json(resp.choices[0].message.content)
 
     result = {
         "shop": data.get("shop"),
