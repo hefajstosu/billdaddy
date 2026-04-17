@@ -36,7 +36,7 @@ def by_category():
 
 @bp.route("/prices/<int:product_id>")
 def price_history(product_id):
-    product = Product.query.get_or_404(product_id)
+    product = db.get_or_404(Product, product_id)
     rows = (
         db.session.query(Receipt.purchase_date, Receipt.shop_name, ReceiptItem.price_per_unit)
         .join(ReceiptItem, ReceiptItem.receipt_id == Receipt.id)
