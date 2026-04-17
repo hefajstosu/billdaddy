@@ -72,7 +72,7 @@ def upload():
 
 @bp.route("/<int:receipt_id>/confirm", methods=["PUT"])
 def confirm(receipt_id):
-    receipt = Receipt.query.get_or_404(receipt_id)
+    receipt = db.get_or_404(Receipt, receipt_id)
     data = request.get_json() or {}
 
     if "shop_name" in data:
@@ -92,7 +92,7 @@ def confirm(receipt_id):
         product = Product.query.filter_by(normalized_name=name).first()
         category_id = it.get("category_id")
         if not product:
-            if not category_id or not Category.query.get(category_id):
+            if not category_id or not db.session.get(Category, category_id):
                 return jsonify({"error": "bad category for " + name}), 400
             product = Product(normalized_name=name, category_id=category_id)
             db.session.add(product)
@@ -132,7 +132,7 @@ def list_receipts():
 
 @bp.route("/<int:receipt_id>", methods=["GET"])
 def get_receipt(receipt_id):
-    r = Receipt.query.get_or_404(receipt_id)
+    r = db.get_or_404(Receipt, receipt_id)
     data = r.to_dict(with_items=True)
     if r.status == "draft":
         # same suggestions as after upload, otherwise select falls back to first category
@@ -144,7 +144,7 @@ def get_receipt(receipt_id):
 
 @bp.route("/<int:receipt_id>", methods=["DELETE"])
 def delete_receipt(receipt_id):
-    r = Receipt.query.get_or_404(receipt_id)
+    r = db.get_or_404(Receipt, receipt_id)
     db.session.delete(r)
     db.session.commit()
     return "", 204

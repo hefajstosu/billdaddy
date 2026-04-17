@@ -3,6 +3,7 @@ import re
 from flask import current_app
 from thefuzz import fuzz, process
 
+from ..extensions import db
 from ..models import Product, Receipt, ReceiptItem
 
 PL = str.maketrans("ąćęłńóśźż", "acelnoszz")
@@ -60,4 +61,4 @@ def match_product(raw_name):
     )
     if score < current_app.config["FUZZY_THRESHOLD"]:
         return None, score
-    return Product.query.get(pid), score
+    return db.session.get(Product, pid), score
