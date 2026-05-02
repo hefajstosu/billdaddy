@@ -37,6 +37,20 @@ def test_upload_bad_extension(client):
     assert res.status_code == 400
 
 
+def test_upload_ocr_error(client, monkeypatch, tmp_path):
+    from app.ocr import OcrError
+
+    client.application.config["UPLOAD_FOLDER"] = str(tmp_path)
+
+    def boom(path):
+        raise OcrError("could not read receipt: bad photo")
+
+    monkeypatch.setattr("app.routes.receipts.extract", boom)
+    res = client.post("/api/receipts", data={"image": (BytesIO(b"x"), "p.jpg")})
+    assert res.status_code == 422
+    assert "bad photo" in res.get_json()["error"]
+
+
 def test_upload_suggestions(upload):
     r = upload([item("ML.ŁACIATE 3,2% 1L", "3.49", "2"), item("COCA COLA 1,5L", "7.49")])
     assert r["status"] == "draft"

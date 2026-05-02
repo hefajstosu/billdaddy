@@ -7,7 +7,7 @@ from flask import Blueprint, current_app, jsonify, request
 
 from ..extensions import db
 from ..models import Category, Product, Receipt, ReceiptItem
-from ..ocr import extract
+from ..ocr import OcrError, extract
 from ..services.categorizer import guess_category
 from ..services.normalizer import match_product
 
@@ -33,7 +33,11 @@ def upload():
     path = os.path.join(folder, filename)
     f.save(path)
 
-    parsed = extract(path)
+    try:
+        parsed = extract(path)
+    except OcrError as e:
+        os.remove(path)
+        return jsonify({"error": str(e)}), 422
 
     receipt = Receipt(
         image_path=path,

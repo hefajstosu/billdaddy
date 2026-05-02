@@ -22,7 +22,7 @@ def load_json(text):
 
 
 def extract(image_path, categories):
-    client = OpenAI(api_key=current_app.config["OPENAI_API_KEY"])
+    client = OpenAI(api_key=current_app.config["OPENAI_API_KEY"], timeout=30)
 
     mime = mimetypes.guess_type(image_path)[0] or "image/jpeg"
     with open(image_path, "rb") as f:
