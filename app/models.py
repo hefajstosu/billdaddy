@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import ROUND_HALF_UP, Decimal
 
 from .extensions import db
@@ -6,6 +6,11 @@ from .extensions import db
 
 def money(v):
     return float(v) if v is not None else None
+
+
+def utcnow():
+    # naive UTC on purpose: MySQL DATETIME has no timezone, keep it simple
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 class Category(db.Model):
@@ -45,7 +50,7 @@ class Receipt(db.Model):
     total_amount = db.Column(db.Numeric(10, 2))
     image_path = db.Column(db.String(255))
     status = db.Column(db.String(20), default="draft", nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utcnow)
 
     items = db.relationship(
         "ReceiptItem", backref="receipt", cascade="all, delete-orphan"
