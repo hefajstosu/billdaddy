@@ -1,8 +1,11 @@
 import os
+import warnings
 
 
 class Config:
-    SECRET_KEY = os.getenv("SECRET_KEY", "dev")
+    SECRET_KEY = os.getenv("SECRET_KEY", "dev-insecure")
+    if SECRET_KEY == "dev-insecure":
+        warnings.warn("SECRET_KEY not set, using insecure default", stacklevel=2)
     SQLALCHEMY_DATABASE_URI = os.getenv(
         "DATABASE_URL", "mysql+pymysql://billdaddy:billdaddy@localhost:3306/billdaddy"
     )

@@ -2,16 +2,16 @@ services:
   db:
     image: mysql:8.0
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: billdaddy
-      MYSQL_USER: billdaddy
-      MYSQL_PASSWORD: billdaddy
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-billdaddy}
+      MYSQL_USER: ${MYSQL_USER:-billdaddy}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-billdaddy}
     ports:
       - "3306:3306"
     volumes:
       - dbdata:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-pbilldaddy", "-ubilldaddy"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p${MYSQL_PASSWORD:-billdaddy}", "-u${MYSQL_USER:-billdaddy}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -24,7 +24,7 @@ services:
       - path: .env
         required: false
     environment:
-      DATABASE_URL: mysql+pymysql://billdaddy:billdaddy@db:3306/billdaddy
+      DATABASE_URL: ${DATABASE_URL:-mysql+pymysql://billdaddy:billdaddy@db:3306/billdaddy}
     volumes:
       - .:/app
     depends_on:
