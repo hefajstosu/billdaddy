@@ -13,7 +13,8 @@ def create_app(config=Config):
 
     from . import models  # noqa
 
-    from .routes import main, receipts, stats
+    from .routes import auth, main, receipts, stats
+    app.register_blueprint(auth.bp)
     app.register_blueprint(main.bp)
     app.register_blueprint(receipts.bp)
     app.register_blueprint(stats.bp)
