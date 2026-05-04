@@ -1,6 +1,8 @@
+import os
+
 from app import create_app
 from app.extensions import db
-from app.models import Category, Product
+from app.models import Category, Product, User
 
 CATEGORIES = [
     "Warzywa i owoce",
@@ -43,5 +45,12 @@ with app.app_context():
             continue
         c = Category.query.filter_by(name=cat).first()
         db.session.add(Product(normalized_name=name, category_id=c.id))
+
+    username = os.getenv("ADMIN_USERNAME", "admin")
+    if not User.query.filter_by(username=username).first():
+        user = User(username=username)
+        user.set_password(os.getenv("ADMIN_PASSWORD", "admin"))
+        db.session.add(user)
+
     db.session.commit()
     print("ok")
