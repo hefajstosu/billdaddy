@@ -5,6 +5,7 @@ from decimal import Decimal, InvalidOperation
 
 from flask import Blueprint, current_app, jsonify, request
 
+from ..auth import login_required
 from ..extensions import db
 from ..models import Category, Product, Receipt, ReceiptItem
 from ..ocr import OcrError, extract
@@ -17,6 +18,7 @@ ALLOWED = {"jpg", "jpeg", "png", "webp"}
 
 
 @bp.route("", methods=["POST"])
+@login_required
 def upload():
     f = request.files.get("image")
     if not f or not f.filename:
@@ -75,6 +77,7 @@ def upload():
 
 
 @bp.route("/<int:receipt_id>/confirm", methods=["PUT"])
+@login_required
 def confirm(receipt_id):
     receipt = db.get_or_404(Receipt, receipt_id)
     data = request.get_json() or {}
@@ -129,12 +132,14 @@ def confirm(receipt_id):
 
 
 @bp.route("", methods=["GET"])
+@login_required
 def list_receipts():
     receipts = Receipt.query.order_by(Receipt.purchase_date.desc()).all()
     return jsonify([r.to_dict() for r in receipts])
 
 
 @bp.route("/<int:receipt_id>", methods=["GET"])
+@login_required
 def get_receipt(receipt_id):
     r = db.get_or_404(Receipt, receipt_id)
     data = r.to_dict(with_items=True)
@@ -147,6 +152,7 @@ def get_receipt(receipt_id):
 
 
 @bp.route("/<int:receipt_id>", methods=["DELETE"])
+@login_required
 def delete_receipt(receipt_id):
     r = db.get_or_404(Receipt, receipt_id)
     db.session.delete(r)

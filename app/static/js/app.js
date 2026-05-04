@@ -6,6 +6,10 @@ let currentReceipt = null;
 
 async function api(url, opts) {
   const res = await fetch(url, opts);
+  if (res.status === 401) {
+    window.location = '/login';
+    throw new Error('unauthorized');
+  }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || res.statusText);
   return data;

@@ -3,6 +3,7 @@ from datetime import date
 from flask import Blueprint, jsonify, request
 from sqlalchemy import func
 
+from ..auth import login_required
 from ..extensions import db
 from ..models import Category, Product, Receipt, ReceiptItem
 
@@ -15,6 +16,7 @@ def _date_arg(name):
 
 
 @bp.route("/categories")
+@login_required
 def by_category():
     total = func.sum(ReceiptItem.price_per_unit * ReceiptItem.quantity)
     q = (
@@ -35,6 +37,7 @@ def by_category():
 
 
 @bp.route("/prices/<int:product_id>")
+@login_required
 def price_history(product_id):
     product = db.get_or_404(Product, product_id)
     rows = (
