@@ -1,9 +1,14 @@
+import os
+
+# set before importing app so Config doesn't warn about the dev fallback
+os.environ.setdefault("SECRET_KEY", "test")
+
 import pytest
 
 from app import create_app
 from app.config import Config
 from app.extensions import db
-from app.models import Category, Product
+from app.models import Category, Product, User
 
 
 # setting the uri after create_app does nothing, db is already bound -> tests hit mysql
@@ -27,6 +32,9 @@ def app():
         for name, c in [("Mleko 3.2%", "Nabiał"), ("Chleb", "Pieczywo"),
                         ("Czekolada Milka", "Słodycze"), ("Papier toaletowy", "Chemia gospodarcza")]:
             db.session.add(Product(normalized_name=name, category_id=cat[c]))
+        user = User(username="test")
+        user.set_password("test")
+        db.session.add(user)
         db.session.commit()
         yield app
         db.session.remove()
@@ -35,4 +43,6 @@ def app():
 
 @pytest.fixture
 def client(app):
-    return app.test_client()
+    c = app.test_client()
+    c.post("/login", data={"username": "test", "password": "test"})
+    return c
