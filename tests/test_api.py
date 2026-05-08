@@ -125,3 +125,11 @@ def test_delete(client, upload):
     r = upload([item("CHLEB", "4.29")])
     assert client.delete(f"/api/receipts/{r['id']}").status_code == 204
     assert client.get(f"/api/receipts/{r['id']}").status_code == 404
+
+
+def test_receipt_image(client, upload):
+    r = upload([item("CHLEB", "4.29")])
+    assert r["has_image"] is True
+    res = client.get(f"/api/receipts/{r['id']}/image")
+    assert res.status_code == 200
+    assert res.data == b"x"

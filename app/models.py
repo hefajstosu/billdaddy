@@ -65,6 +65,7 @@ class Receipt(db.Model):
             "purchase_date": self.purchase_date.isoformat() if self.purchase_date else None,
             "total_amount": money(self.total_amount),
             "status": self.status,
+            "has_image": bool(self.image_path),
         }
         if with_items:
             d["items"] = [i.to_dict() for i in self.items]

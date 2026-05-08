@@ -29,6 +29,7 @@
       </form>
 
       <div id="draft" class="hidden mt-5">
+        <img id="d-image" class="hidden max-h-48 rounded border mb-3" alt="paragon">
         <div class="grid sm:grid-cols-3 gap-3 mb-3 text-sm">
           <label>Sklep <input id="d-shop" class="w-full border rounded px-2 py-1"></label>
           <label>Data <input id="d-date" type="date" class="w-full border rounded px-2 py-1"></label>
@@ -81,7 +82,7 @@
       <table class="w-full text-sm">
         <thead>
           <tr class="text-left text-gray-500 border-b">
-            <th class="py-1">Data</th><th>Sklep</th><th class="text-right pr-4">Suma</th><th>Status</th><th></th>
+            <th></th><th class="py-1">Data</th><th>Sklep</th><th class="text-right pr-4">Suma</th><th>Status</th><th></th>
           </tr>
         </thead>
         <tbody id="receipts"></tbody>
