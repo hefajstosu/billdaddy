@@ -3,7 +3,7 @@ import uuid
 from datetime import date
 from decimal import Decimal, InvalidOperation
 
-from flask import Blueprint, current_app, jsonify, request
+from flask import Blueprint, current_app, jsonify, request, send_from_directory
 
 from ..auth import login_required
 from ..extensions import db
@@ -158,3 +158,15 @@ def delete_receipt(receipt_id):
     db.session.delete(r)
     db.session.commit()
     return "", 204
+
+
+@bp.route("/<int:receipt_id>/image")
+@login_required
+def receipt_image(receipt_id):
+    r = db.get_or_404(Receipt, receipt_id)
+    if not r.image_path:
+        return jsonify({"error": "no image"}), 404
+    # basename so the stored path can't be used to escape the uploads folder
+    return send_from_directory(
+        current_app.config["UPLOAD_FOLDER"], os.path.basename(r.image_path)
+    )

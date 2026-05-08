@@ -90,6 +90,8 @@ function addRow(it = {}) {
 function renderDraft(receipt) {
   currentReceipt = receipt;
   $('#draft').classList.remove('hidden');
+  $('#d-image').classList.toggle('hidden', !receipt.has_image);
+  if (receipt.has_image) $('#d-image').src = `/api/receipts/${receipt.id}/image`;
   $('#d-shop').value = receipt.shop_name || '';
   $('#d-date').value = receipt.purchase_date || '';
   $('#d-total').value = receipt.total_amount ?? '';
@@ -232,6 +234,18 @@ async function loadReceipts() {
   rows.forEach((r) => {
     const tr = document.createElement('tr');
     tr.className = 'border-b';
+
+    const thumbTd = document.createElement('td');
+    thumbTd.className = 'py-1 pr-3';
+    if (r.has_image) {
+      const img = document.createElement('img');
+      img.src = `/api/receipts/${r.id}/image`;
+      img.className = 'h-12 w-10 object-cover rounded border cursor-pointer';
+      img.onclick = () => window.open(`/api/receipts/${r.id}/image`);
+      thumbTd.appendChild(img);
+    }
+    tr.appendChild(thumbTd);
+
     const cells = [r.purchase_date || '-', r.shop_name || '?',
       r.total_amount != null ? r.total_amount.toFixed(2) : '-', r.status];
     cells.forEach((v, i) => {
