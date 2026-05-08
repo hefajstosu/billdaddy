@@ -22,6 +22,8 @@ docker compose up --build
 
 App is on http://localhost:5001 (5000 is taken by AirPlay on macOS). Migrations and seed (categories + a few products) run on container start.
 
+Login is `admin` / `admin` by default — change `ADMIN_USERNAME` / `ADMIN_PASSWORD` in `.env`.
+
 To use OpenAI instead of Tesseract set in `.env`:
 
 ```
@@ -42,11 +44,14 @@ OPENAI_API_KEY=sk-...
 
 ## API
 
+All endpoints require login (session cookie).
+
 | method | url | |
 |---|---|---|
 | POST | `/api/receipts` | upload (`multipart`, field `image`) |
 | PUT | `/api/receipts/<id>/confirm` | save corrected items |
 | GET | `/api/receipts`, `/api/receipts/<id>` | |
+| GET | `/api/receipts/<id>/image` | the uploaded receipt photo |
 | DELETE | `/api/receipts/<id>` | |
 | GET | `/api/categories`, `/api/products` | |
 | GET | `/api/stats/categories?from=&to=` | spending per category |
