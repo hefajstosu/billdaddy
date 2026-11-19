@@ -8,6 +8,3 @@ pillow==10.4.0
 thefuzz==0.22.1
 flask-migrate==4.0.7
 openai==1.58.1
-
-# dev
-pytest==8.3.3
