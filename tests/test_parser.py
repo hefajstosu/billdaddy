@@ -27,7 +27,11 @@ def test_header():
 def test_items():
     items = parse(BIEDRONKA)["items"]
     assert len(items) == 5
-    assert items[0] == {"raw_name": "ML.ŁACIATE 3,2% 1L", "price": Decimal("3.49"), "quantity": Decimal("2")}
+    assert items[0] == {
+        "raw_name": "ML.ŁACIATE 3,2% 1L",
+        "price": Decimal("3.49"),
+        "quantity": Decimal("2"),
+    }
     # ocr garbage around numbers
     assert items[1]["raw_name"] == "CZEK.MILKA ALPEJSKA"
     assert items[3]["quantity"] == Decimal("0.856")

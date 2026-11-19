@@ -49,10 +49,7 @@ def price_history(product_id):
         .order_by(Receipt.purchase_date)
         .all()
     )
-    points = [
-        {"date": d.isoformat(), "shop": shop, "price": float(p)}
-        for d, shop, p in rows
-    ]
+    points = [{"date": d.isoformat(), "shop": shop, "price": float(p)} for d, shop, p in rows]
 
     change = None
     if len(points) >= 2 and points[0]["price"]:

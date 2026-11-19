@@ -28,7 +28,17 @@ SHOPS = {
 }
 
 # lines that look like items but aren't
-SKIP_WORDS = ("SUMA", "PTU", "RESZTA", "GOTÓWKA", "GOTOWKA", "KARTA", "RABAT", "SPRZEDAŻ", "SPRZEDAZ")
+SKIP_WORDS = (
+    "SUMA",
+    "PTU",
+    "RESZTA",
+    "GOTÓWKA",
+    "GOTOWKA",
+    "KARTA",
+    "RABAT",
+    "SPRZEDAŻ",
+    "SPRZEDAZ",
+)
 
 
 def to_num(s):
@@ -54,7 +64,7 @@ def find_date(text):
 
 
 def parse(text):
-    lines = [l.strip() for l in text.splitlines() if l.strip()]
+    lines = [s.strip() for s in text.splitlines() if s.strip()]
     result = {
         "shop": find_shop(lines),
         "date": None,
@@ -77,19 +87,23 @@ def parse(text):
 
         m = QTY_RE.match(line)
         if m:
-            items.append({
-                "raw_name": m.group("name").strip(),
-                "price": to_num(m.group("unit")),
-                "quantity": to_num(m.group("qty")),
-            })
+            items.append(
+                {
+                    "raw_name": m.group("name").strip(),
+                    "price": to_num(m.group("unit")),
+                    "quantity": to_num(m.group("qty")),
+                }
+            )
             continue
 
         m = ITEM_RE.match(line)
         if not m:
             continue
-        items.append({
-            "raw_name": m.group("name"),
-            "price": to_num(m.group("price")),
-            "quantity": 1,
-        })
+        items.append(
+            {
+                "raw_name": m.group("name"),
+                "price": to_num(m.group("price")),
+                "quantity": 1,
+            }
+        )
     return result
