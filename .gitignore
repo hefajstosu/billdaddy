@@ -7,3 +7,6 @@ uploads/*
 !uploads/.gitkeep
 .DS_Store
 .idea/
+.coverage
+.pytest_cache/
+.ruff_cache/
