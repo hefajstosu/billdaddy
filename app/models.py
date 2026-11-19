@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import ROUND_HALF_UP, Decimal
 
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -12,7 +12,7 @@ def money(v):
 
 def utcnow():
     # naive UTC on purpose: MySQL DATETIME has no timezone, keep it simple
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+    return datetime.now(UTC).replace(tzinfo=None)
 
 
 class Category(db.Model):
@@ -54,9 +54,7 @@ class Receipt(db.Model):
     status = db.Column(db.String(20), default="draft", nullable=False)
     created_at = db.Column(db.DateTime, default=utcnow)
 
-    items = db.relationship(
-        "ReceiptItem", backref="receipt", cascade="all, delete-orphan"
-    )
+    items = db.relationship("ReceiptItem", backref="receipt", cascade="all, delete-orphan")
 
     def to_dict(self, with_items=False):
         d = {

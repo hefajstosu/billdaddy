@@ -10,6 +10,7 @@ from app.models import Product
 def fake_extract(items, d=date(2026, 11, 2), total="10.00"):
     def _extract(path):
         return {"shop": "Biedronka", "date": d, "total": Decimal(total), "items": items}
+
     return _extract
 
 
@@ -21,6 +22,7 @@ def upload(client, monkeypatch, tmp_path):
         res = client.post("/api/receipts", data={"image": (BytesIO(b"x"), "p.jpg")})
         assert res.status_code == 201
         return res.get_json()
+
     return _upload
 
 
@@ -65,9 +67,14 @@ def confirm_body(r, names, cat_id=None):
         "purchase_date": r["purchase_date"],
         "total_amount": r["total_amount"],
         "items": [
-            {"raw_name": i["raw_name"], "product_name": n, "category_id": cat_id,
-             "price_per_unit": i["price_per_unit"], "quantity": i["quantity"]}
-            for i, n in zip(r["items"], names)
+            {
+                "raw_name": i["raw_name"],
+                "product_name": n,
+                "category_id": cat_id,
+                "price_per_unit": i["price_per_unit"],
+                "quantity": i["quantity"],
+            }
+            for i, n in zip(r["items"], names, strict=True)
         ],
     }
 
@@ -75,12 +82,16 @@ def confirm_body(r, names, cat_id=None):
 def test_confirm_creates_product(client, upload):
     r = upload([item("COCA COLA 1,5L", "7.49")], total="7.49")
     napoje = next(c for c in client.get("/api/categories").get_json() if c["name"] == "Napoje")
-    res = client.put(f"/api/receipts/{r['id']}/confirm", json=confirm_body(r, ["Coca-Cola 1.5L"], napoje["id"]))
+    res = client.put(
+        f"/api/receipts/{r['id']}/confirm", json=confirm_body(r, ["Coca-Cola 1.5L"], napoje["id"])
+    )
     data = res.get_json()
     assert res.status_code == 200
     assert data["status"] == "confirmed"
     assert data["total_mismatch"] is False
-    assert Product.query.filter_by(normalized_name="Coca-Cola 1.5L").first().category.name == "Napoje"
+    assert (
+        Product.query.filter_by(normalized_name="Coca-Cola 1.5L").first().category.name == "Napoje"
+    )
 
     # next time same raw name is matched straight away
     r2 = upload([item("COCA COLA 1,5L", "7.99")])
