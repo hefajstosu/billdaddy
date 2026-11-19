@@ -30,13 +30,15 @@ def extract(image_path, categories):
 
     resp = client.chat.completions.create(
         model=current_app.config["OPENAI_MODEL"],
-        messages=[{
-            "role": "user",
-            "content": [
-                {"type": "text", "text": PROMPT % ", ".join(categories)},
-                {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}},
-            ],
-        }],
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": PROMPT % ", ".join(categories)},
+                    {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}},
+                ],
+            }
+        ],
         temperature=0,
         response_format={"type": "json_object"},
     )
@@ -54,10 +56,12 @@ def extract(image_path, categories):
         except ValueError:
             pass
     for it in data.get("items", []):
-        result["items"].append({
-            "raw_name": it["raw_name"],
-            "quantity": Decimal(str(it.get("quantity") or 1)),
-            "price": Decimal(str(it["price"])),
-            "category": it.get("category"),
-        })
+        result["items"].append(
+            {
+                "raw_name": it["raw_name"],
+                "quantity": Decimal(str(it.get("quantity") or 1)),
+                "price": Decimal(str(it["price"])),
+                "category": it.get("category"),
+            }
+        )
     return result

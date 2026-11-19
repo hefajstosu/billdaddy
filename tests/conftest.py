@@ -29,8 +29,12 @@ def app():
             db.session.add(Category(name=name))
         db.session.commit()
         cat = {c.name: c.id for c in Category.query.all()}
-        for name, c in [("Mleko 3.2%", "Nabiał"), ("Chleb", "Pieczywo"),
-                        ("Czekolada Milka", "Słodycze"), ("Papier toaletowy", "Chemia gospodarcza")]:
+        for name, c in [
+            ("Mleko 3.2%", "Nabiał"),
+            ("Chleb", "Pieczywo"),
+            ("Czekolada Milka", "Słodycze"),
+            ("Papier toaletowy", "Chemia gospodarcza"),
+        ]:
             db.session.add(Product(normalized_name=name, category_id=cat[c]))
         user = User(username="test")
         user.set_password("test")

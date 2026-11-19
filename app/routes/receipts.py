@@ -29,7 +29,7 @@ def upload():
         return jsonify({"error": "bad file type"}), 400
 
     # every phone names photos IMG_xxxx.jpg so they kept overwriting each other
-    filename = "{}.{}".format(uuid.uuid4().hex, ext)
+    filename = f"{uuid.uuid4().hex}.{ext}"
     folder = current_app.config["UPLOAD_FOLDER"]
     os.makedirs(folder, exist_ok=True)
     path = os.path.join(folder, filename)
@@ -54,24 +54,30 @@ def upload():
             cat = product.category
         elif it.get("category"):
             # openai already suggested one
-            cat = Category.query.filter_by(name=it["category"]).first() or guess_category(it["raw_name"])
+            cat = Category.query.filter_by(name=it["category"]).first() or guess_category(
+                it["raw_name"]
+            )
         else:
             cat = guess_category(it["raw_name"])
-        receipt.items.append(ReceiptItem(
-            raw_name=it["raw_name"],
-            price_per_unit=it["price"],
-            quantity=it["quantity"],
-            product=product,
-        ))
-        suggestions.append({
-            "score": score,
-            "category": cat.to_dict() if cat else None,
-        })
+        receipt.items.append(
+            ReceiptItem(
+                raw_name=it["raw_name"],
+                price_per_unit=it["price"],
+                quantity=it["quantity"],
+                product=product,
+            )
+        )
+        suggestions.append(
+            {
+                "score": score,
+                "category": cat.to_dict() if cat else None,
+            }
+        )
     db.session.add(receipt)
     db.session.commit()
 
     data = receipt.to_dict(with_items=True)
-    for item, sug in zip(data["items"], suggestions):
+    for item, sug in zip(data["items"], suggestions, strict=True):
         item.update(sug)
     return jsonify(data), 201
 
@@ -112,12 +118,14 @@ def confirm(receipt_id):
         except (KeyError, InvalidOperation):
             return jsonify({"error": "bad price/quantity for " + name}), 400
 
-        receipt.items.append(ReceiptItem(
-            raw_name=it.get("raw_name") or name,
-            price_per_unit=price,
-            quantity=qty,
-            product=product,
-        ))
+        receipt.items.append(
+            ReceiptItem(
+                raw_name=it.get("raw_name") or name,
+                price_per_unit=price,
+                quantity=qty,
+                product=product,
+            )
+        )
 
     receipt.status = "confirmed"
     db.session.commit()
@@ -125,9 +133,7 @@ def confirm(receipt_id):
     computed = sum((i.line_total for i in receipt.items), Decimal("0"))
     result = receipt.to_dict(with_items=True)
     result["computed_total"] = float(computed)
-    result["total_mismatch"] = (
-        receipt.total_amount is not None and computed != receipt.total_amount
-    )
+    result["total_mismatch"] = receipt.total_amount is not None and computed != receipt.total_amount
     return jsonify(result)
 
 
@@ -145,7 +151,7 @@ def get_receipt(receipt_id):
     data = r.to_dict(with_items=True)
     if r.status == "draft":
         # same suggestions as after upload, otherwise select falls back to first category
-        for item, obj in zip(data["items"], r.items):
+        for item, obj in zip(data["items"], r.items, strict=True):
             cat = obj.product.category if obj.product else guess_category(obj.raw_name)
             item["category"] = cat.to_dict() if cat else None
     return jsonify(data)
@@ -167,6 +173,4 @@ def receipt_image(receipt_id):
     if not r.image_path:
         return jsonify({"error": "no image"}), 404
     # basename so the stored path can't be used to escape the uploads folder
-    return send_from_directory(
-        current_app.config["UPLOAD_FOLDER"], os.path.basename(r.image_path)
-    )
+    return send_from_directory(current_app.config["UPLOAD_FOLDER"], os.path.basename(r.image_path))

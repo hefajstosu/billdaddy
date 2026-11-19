@@ -1,5 +1,7 @@
 # BillDaddy
 
+[![CI](https://github.com/hefajstosu/billdaddy/actions/workflows/ci.yml/badge.svg)](https://github.com/hefajstosu/billdaddy/actions/workflows/ci.yml)
+
 Small app for tracking home expenses from photos of shop receipts. You upload a photo, it reads the items (OCR), matches them to known products, guesses a category and lets you fix everything before saving. On top of that it shows how prices of the same products change over time (my own "inflation index").
 
 ![screenshot](docs/screenshot.jpg)
@@ -60,11 +62,12 @@ All endpoints require login (session cookie).
 ## Tests
 
 ```
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
 pytest
+ruff check . && ruff format --check .
 ```
 
-Tests use sqlite in memory, OCR is mocked.
+Tests use sqlite in memory, OCR is mocked. CI (GitHub Actions) runs lint, tests with coverage, migrations against MySQL 8 (`flask db upgrade` + `flask db check`) and a docker build.
 
 ## TODO
 
